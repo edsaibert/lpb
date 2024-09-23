@@ -1,0 +1,151 @@
+#include "io.h"
+
+void printMatrix(int **m, int width, int height)
+{
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            printf("%d ", m[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+short isFileEmpty(FILE *file)
+{
+    if (file == NULL)
+    {
+        return 1;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    return (size == 0);
+}
+
+PGM *openPGM(char *fname)
+{
+    // Inicialmente, não sabemos se o arquivo é binário ou ASCII
+    FILE *file = fopen(fname, "rb");
+    if (!file)
+    {
+        printf("Erro ao abrir o arquivo: %s\n", fname);
+        return NULL;
+    }
+
+    // Cria a estrutura PGM
+    PGM *pgm = malloc(sizeof(PGM));
+    if (!pgm)
+    {
+        fclose(file);
+        return NULL;
+    }
+
+    // Checa se o arquivo está vazio
+    if (isFileEmpty(file))
+    {
+        printf("O arquivo está vazio: %s\n", fname);
+        fclose(file);
+        free(pgm);
+        return NULL;
+    }
+
+    // Se o arquivo for do tipo P2, necessário reabrir o arquivo
+    fscanf(file, "%2s", pgm->type);
+    if (strcmp(pgm->type, "P2") == 0)
+    {
+        fclose(file);
+        file = fopen(fname, "r");
+        fscanf(file, "%2s", pgm->type);
+    }
+
+    // Leitura do cabeçalho
+    fscanf(file, "%d %d", &pgm->width, &pgm->height);
+    fscanf(file, "%d", &pgm->max_gray);
+
+    pgm->matrix = malloc(pgm->height * sizeof(int *));
+    if (!pgm->matrix)
+    {
+        printf("Compre mais memória\n");
+        fclose(file);
+        return NULL;
+    }
+
+    // aloca memória para todas as linhas da matriz
+    for (int i = 0; i < pgm->height; i++)
+    {
+        pgm->matrix[i] = malloc(pgm->width * sizeof(int));
+        if (!pgm->matrix[i])
+        {
+            printf("Compre mais memória\n");
+            fclose(file);
+            return NULL;
+        }
+    }
+
+    // Ler dados para a matriz
+    for (int i = 0; i < pgm->height; i++)
+        for (int j = 0; j < pgm->width; j++)
+            if (!feof(file))
+            {
+                // Se é do tipo binário (P5)
+                if (strcmp(pgm->type, "P5") == 0)
+                    fread(&pgm->matrix[i][j], sizeof(unsigned char), 1, file);
+                // Se é do tipo ASCII (P2)
+                else if (strcmp(pgm->type, "P2") == 0)
+                    fscanf(file, "%d", &pgm->matrix[i][j]);
+            }
+
+    return pgm;
+};
+
+short isPGM(const char *fname)
+{
+    const char *dot = strrchr(fname, '.');
+    if (dot != NULL)
+    {
+        if (strcmp(dot, ".pgm") == 0)
+            return 1;
+    }
+    printf("Arquivo não é PGM\n");
+    return 0;
+}
+
+void openDirectory(char *directory)
+{
+    PGM *pgm;
+    struct dirent *i;
+    DIR *dir = opendir(directory);
+
+    if (dir == NULL)
+    {
+        printf("Erro ao abrir diretório\n");
+        return;
+    }
+
+    while ((i = readdir(dir)))
+    {
+        if (isPGM(i->d_name))
+        {
+            char path[1024];
+            snprintf(path, sizeof(path), "%s/%s", directory, i->d_name);
+            pgm = openPGM(path);
+        }
+    }
+
+    closedir(dir);
+}
+
+void compareLpbImages(char* directory, char* input){
+    openDirectory(directory);
+}
+
+void makeLpbImage(char* input, char* output){
+    PGM* pgm;
+    if (isPGM(input))
+        pgm = openPGM(input);
+}
+
