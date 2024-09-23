@@ -66,7 +66,7 @@ PGM *openPGM(char *fname)
     fscanf(file, "%d %d", &pgm->width, &pgm->height);
     fscanf(file, "%d", &pgm->max_gray);
 
-    pgm->matrix = malloc(pgm->height * sizeof(int *));
+    pgm->matrix = malloc((pgm->height + 2) * sizeof(int *));
     if (!pgm->matrix)
     {
         printf("Compre mais memória\n");
@@ -74,31 +74,30 @@ PGM *openPGM(char *fname)
         return NULL;
     }
 
-    // aloca memória para todas as linhas da matriz
-    for (int i = 0; i < pgm->height; i++)
+    // aloca memória para todas as linhas da matriz e faz o padding
+    for (int i = 0; i < pgm->height + 2; i++)
     {
-        pgm->matrix[i] = malloc(pgm->width * sizeof(int));
+        pgm->matrix[i] = malloc((pgm->width + 2) * sizeof(int));
         if (!pgm->matrix[i])
         {
             printf("Compre mais memória\n");
             fclose(file);
             return NULL;
         }
+        memset(pgm->matrix[i], 0, (pgm->width + 2) * sizeof(int)); // padding
     }
 
     // Ler dados para a matriz
-    for (int i = 0; i < pgm->height; i++)
-        for (int j = 0; j < pgm->width; j++)
-            if (!feof(file))
-            {
-                // Se é do tipo binário (P5)
-                if (strcmp(pgm->type, "P5") == 0)
-                    fread(&pgm->matrix[i][j], sizeof(unsigned char), 1, file);
-                // Se é do tipo ASCII (P2)
-                else if (strcmp(pgm->type, "P2") == 0)
-                    fscanf(file, "%d", &pgm->matrix[i][j]);
-            }
+    for (int i = 1; i < pgm->height+1; i++)
+        for (int j = 1; j < pgm->width+1; j++)
+            // Se é do tipo binário (P5)
+            if (strcmp(pgm->type, "P5") == 0)
+                fread(&pgm->matrix[i][j], sizeof(unsigned char), 1, file);
+            // Se é do tipo ASCII (P2)
+            else if (strcmp(pgm->type, "P2") == 0)
+                fscanf(file, "%d", &pgm->matrix[i][j]);
 
+    // printMatrix(pgm->matrix, pgm->width+2, pgm->height+2);
     return pgm;
 };
 
@@ -130,6 +129,9 @@ void openDirectory(char *directory)
     {
         if (isPGM(i->d_name))
         {
+            if (doesLpbExist(i->d_name))
+                continue;
+
             char path[1024];
             snprintf(path, sizeof(path), "%s/%s", directory, i->d_name);
             pgm = openPGM(path);
@@ -138,14 +140,3 @@ void openDirectory(char *directory)
 
     closedir(dir);
 }
-
-void compareLpbImages(char* directory, char* input){
-    openDirectory(directory);
-}
-
-void makeLpbImage(char* input, char* output){
-    PGM* pgm;
-    if (isPGM(input))
-        pgm = openPGM(input);
-}
-

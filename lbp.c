@@ -1,8 +1,11 @@
 #include "includes.h"
+// Own
+#include "io/io.h"
+#include "descriptor/descriptor.h"
 
 int main(int argc, char *argv[])
 {
-    if (argc != 5)
+    if (argc < 5)
     {
         printf("Comando inválido");
     }
@@ -37,11 +40,16 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (directory)
-        compareLpbImages(directory, input);
-    else if (input)
-        makeLpbImage(input, output);
-
+    PGM* pgm;
+    if (input){
+        if (isPGM(input))
+            pgm = openPGM(input);
+    }
+    if (directory){
+        openDirectory(directory);
+    }
+    if (output){
+    }
 
     // free
     free(directory);

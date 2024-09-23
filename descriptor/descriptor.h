@@ -3,4 +3,8 @@
 
 #include "../includes.h"
 
-#endif
+char *getNameBeforeDot(char *f);
+
+short doesLpbExist(char *f);
+
+#endif 

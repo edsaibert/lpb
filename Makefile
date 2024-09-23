@@ -1,9 +1,10 @@
 CC = gcc
 CFLAGS = -Wall -g 
 IO = ./io
+DESC = ./descriptor
 
 TARGET = lbp 
-c_files = lbp.c $(IO)/io.c
+c_files = lbp.c $(IO)/io.c $(DESC)/descriptor.c
 objects = $(c_files:.c=.o) 
 
 default: $(TARGET)
