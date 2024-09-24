@@ -66,6 +66,14 @@ PGM *openPGM(char *fname)
     fscanf(file, "%d %d", &pgm->width, &pgm->height);
     fscanf(file, "%d", &pgm->max_gray);
 
+    pgm->path = malloc(strlen(fname) + 1);
+    if (!pgm->path)
+    {
+        fclose(file);
+        return NULL;
+    }
+    strcpy(pgm->path, fname); 
+
     pgm->matrix = malloc((pgm->height + 2) * sizeof(int *));
     if (!pgm->matrix)
     {

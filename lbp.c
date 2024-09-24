@@ -41,9 +41,12 @@ int main(int argc, char *argv[])
     }
 
     PGM* pgm;
+    LBP* lbp;
     if (input){
-        if (isPGM(input))
+        if (isPGM(input)){
             pgm = openPGM(input);
+            lbp = createLbpFile(pgm);
+        }
     }
     if (directory){
         openDirectory(directory);
