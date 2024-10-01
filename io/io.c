@@ -127,7 +127,7 @@ short isPGM(const char *fname)
     return 0;
 }
 
-void openDirectory(char *directory)
+void openDirectory(char* input, char *directory)
 {
     PGM *pgm;
     LBP *lbp;
@@ -140,6 +140,8 @@ void openDirectory(char *directory)
         return;
     }
 
+
+    // Lê todos os arquivos do diretório e cria todos os LBP's, exceto se já existir
     while ((i = readdir(dir)))
     {
         if (isPGM(i->d_name))
@@ -159,5 +161,41 @@ void openDirectory(char *directory)
         }
     }
 
+    
+
     closedir(dir);
+}
+
+float moreSimilar(char* input, char* diretorio){
+    PGM *pgm;
+    LBP *lbp;
+    float dist = 0;
+    float min = FLT_MAX; // Inicializar min com FLT_MAX
+    char *minName = malloc(1024);
+    struct dirent *i;
+    DIR *dir = opendir(diretorio);
+
+    if (dir == NULL)
+    {
+        printf("Erro ao abrir diretório\n");
+        return -1;
+    }
+
+    while ((i = readdir(dir)))
+    {
+        if (isPGM(i->d_name))
+        {
+            char path[1024];
+            snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
+            dist = eucDistance(input, path);
+            if (dist < min){
+                min = dist;
+                strcpy(minName, i->d_name);
+            }
+        }
+    }
+
+    closedir(dir);
+    printf("Imagem mais similar: %s\n", minName);
+    return min;
 }

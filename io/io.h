@@ -11,7 +11,7 @@ PGM* openPGM(char *f);
 short isPGM(const char *f);
 
 /*  Abre um diretório e verifica os arquivos dentro dele */
-void openDirectory(char* directory);
+void openDirectory(char* input, char* directory);
 
 void printMatrix(int** m, int width, int height);
 

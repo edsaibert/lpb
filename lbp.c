@@ -6,9 +6,7 @@
 int main(int argc, char *argv[])
 {
     if (argc < 5)
-    {
-        printf("Comando inválido");
-    }
+        return 1;
 
     char next_option;
     char *directory = NULL, *input = NULL, *output = NULL;
@@ -35,27 +33,32 @@ int main(int argc, char *argv[])
             strcpy(output, optarg);
             break;
         default:
-            printf("Argumentos: -d ou -i [entrada ou diretório] -i ou -o [entrada ou saída de imagem]");
             break;
         }
     }
 
-    PGM* pgm;
-    LBP* lbp;
-    if (input){
-        if (isPGM(input)){
-            pgm = openPGM(input);
-            lbp = createLbp(pgm, NULL);
-            createLbpFile(lbp);
+    PGM *pgm;
+    LBP *lbp;
+
+    if (!input)
+        return 1;
+
+    if (isPGM(input))
+    {
+        pgm = openPGM(input);
+        lbp = createLbp(pgm, NULL);
+        createLbpFile(lbp);
+
+        eucDistance("Apuleia1.lbp", "Cecropia4.lbp");
+        if (directory)
+        {
+            openDirectory(input, directory);
+        }
+        if (output)
+        {
+            createLbpImage(lbp, output);
         }
     }
-    if (directory){
-        openDirectory(directory);
-    }
-    if (output){
-        createLbpImage(lbp, output);
-    }
-
     // free
     free(directory);
     free(input);

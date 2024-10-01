@@ -33,6 +33,80 @@ void freePgm(PGM *pgm)
     free(pgm);
 }
 
+float moreSimilar(char* input, char* diretorio){
+    PGM *pgm;
+    LBP *lbp;
+    float dist = -1;
+    float min = FLT_MAX; // Inicializar min com FLT_MAX
+    char *minName = malloc(1023);
+    struct dirent *i;
+    DIR *dir = opendir(diretorio);
+
+    if (dir == NULL)
+    {
+        printf("Erro ao abrir diretório\n");
+        return -2;
+    }
+
+    while ((i = readdir(dir)))
+    {
+        if (isPGM(i->d_name))
+        {
+            char path[1023];
+            snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
+            dist = eucDistance(input, path);
+            if (dist < min){
+                min = dist;
+                strcpy(minName, i->d_name);
+            }
+        }
+    }
+
+    closedir(dir);
+    printf("Imagem mais similar: %s\n", minName);
+    return min;
+}
+
+/*
+    Calcula a distância euclidiana entre dois vetores
+*/
+float eucDistance(char* nome1, char* nome2){
+    if (!doesLpbExist(nome1) && !doesLpbExist(nome2)){
+        return -1;
+    }
+
+    char *path1 = createPath(nome1, "./bin/", ".lbp");
+    char *path2 = createPath(nome2, "./bin/", ".lbp");
+
+    printf("%s\n", path1);
+    printf("%s\n", path2);
+
+    FILE *file1 = fopen(path1, "r");
+    FILE *file2 = fopen(path2, "r");
+
+    if (!file1 || !file2)
+        return -1;
+
+    int dist = 0;
+    unsigned char h1, h2;
+    for (int i = 0; i < 256; i++)
+    {
+        fread(&h1, sizeof(unsigned char), 1, file1);
+        fread(&h2, sizeof(unsigned char), 1, file2);
+        dist += (h1 - h2) * (h1 - h2);
+    }
+
+    fclose(file1);
+    fclose(file2);
+    free(path1);
+    free(path2);
+
+    printf("Distância euclidiana: %lf\n", sqrt(dist));
+
+    return sqrt(dist);
+}
+
+
 int *createHistogram(int height, int width, int **matrix)
 {
     int *histogram = malloc(sizeof(int) * 256);

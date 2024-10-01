@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h> // getopt
 #include <dirent.h> // opendir, readdir
+#include <math.h> 
+#include <float.h>
 
 // mask size
 #define MASKSIZE 8

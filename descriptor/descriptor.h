@@ -17,6 +17,8 @@ void createLbpFile(LBP* lbp);
 
 void createLbpImage(LBP* lbp, char *output);
 
+float eucDistance(char* nome1, char* nome2);
+
 void freeLbp(LBP *lbp);
 
 void freePgm(PGM *pgm);
