@@ -72,7 +72,7 @@ PGM *openPGM(char *fname)
         fclose(file);
         return NULL;
     }
-    strcpy(pgm->path, fname); 
+    strcpy(pgm->path, fname);
 
     pgm->matrix = malloc((pgm->height + 2) * sizeof(int *));
     if (!pgm->matrix)
@@ -94,18 +94,24 @@ PGM *openPGM(char *fname)
         }
         memset(pgm->matrix[i], 0, (pgm->width + 2) * sizeof(int)); // padding
     }
-
     // Ler dados para a matriz
-    for (int i = 1; i < pgm->height+1; i++)
-        for (int j = 1; j < pgm->width+1; j++)
-            // Se é do tipo binário (P5)
-            if (strcmp(pgm->type, "P5") == 0)
-                fread(&pgm->matrix[i][j], sizeof(unsigned char), 1, file);
-            // Se é do tipo ASCII (P2)
-            else if (strcmp(pgm->type, "P2") == 0)
-                fscanf(file, "%d", &pgm->matrix[i][j]);
 
-    // printMatrix(pgm->matrix, pgm->width+2, pgm->height+2);
+    // Se é do tipo binário (P5)
+    if (strcmp(pgm->type, "P5") == 0)
+    {
+        for (int i = 1; i < pgm->height + 1; i++)
+            for (int j = 1; j < pgm->width + 1; j++)
+                fread(&pgm->matrix[i][j], sizeof(unsigned char), 1, file);
+    }
+    // Se é do tipo ASCII (P2)
+    else if (strcmp(pgm->type, "P2") == 0)
+    {
+
+        for (int i = 1; i < pgm->height + 1; i++)
+            for (int j = 1; j < pgm->width + 1; j++)
+                fscanf(file, "%d", &pgm->matrix[i][j]);
+    }
+
     return pgm;
 };
 

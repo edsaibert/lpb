@@ -13,6 +13,6 @@ int** createMask(PGM* pgm);
 
 LBP* createLbp(PGM *pgm);
 
-LBP* createLbpFile(PGM *pgm);
+void createLbpImage(PGM *pgm, char *output);
 
 #endif 
