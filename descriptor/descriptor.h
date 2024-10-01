@@ -11,8 +11,14 @@ void translateBinary(MASK mask, int** binary, int i, int j);
 
 int** createMask(PGM* pgm);
 
-LBP* createLbp(PGM *pgm);
+LBP* createLbp(PGM *pgm, char* path);
 
-void createLbpImage(PGM *pgm, char *output);
+void createLbpFile(LBP* lbp);
+
+void createLbpImage(LBP* lbp, char *output);
+
+void freeLbp(LBP *lbp);
+
+void freePgm(PGM *pgm);
 
 #endif 

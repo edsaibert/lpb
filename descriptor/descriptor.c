@@ -1,5 +1,56 @@
 #include "descriptor.h"
 
+/*
+    Função que cria um caminho para um arquivo
+*/
+char *createPath(char *name, char *prefix, char *sufix)
+{
+    char *path = malloc(strlen(prefix) + strlen(name) + strlen(sufix) + 1);
+    if (path != NULL)
+    {
+        name = getNameBeforeDot(name);
+        snprintf(path, strlen(prefix) + strlen(name) + strlen(sufix) + 1, "%s%s%s", prefix, name, sufix);
+    }
+    return path;
+}
+
+void freeLbp(LBP *lbp)
+{
+    for (int i = 0; i < lbp->height; i++)
+        free(lbp->matrix[i]);
+    free(lbp->matrix);
+    free(lbp->histogram);
+    free(lbp->path);
+    free(lbp);
+}
+
+void freePgm(PGM *pgm)
+{
+    for (int i = 0; i < pgm->height; i++)
+        free(pgm->matrix[i]);
+    free(pgm->matrix);
+    free(pgm->path);
+    free(pgm);
+}
+
+int *createHistogram(int height, int width, int **matrix)
+{
+    int *histogram = malloc(sizeof(int) * 256);
+
+    for (int i = 0; i < 256; i++)
+        histogram[i] = 0;
+
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            histogram[matrix[i][j]]++;
+        }
+    }
+
+    return histogram;
+}
+
 void translateBinary(MASK mask, int **binary, int i, int j)
 {
     int pow = 1;
@@ -69,7 +120,7 @@ int **createMask(PGM *pgm)
     return binary;
 }
 
-LBP *createLbp(PGM *pgm)
+LBP *createLbp(PGM *pgm, char *path)
 {
     LBP *lbp;
     lbp = malloc(sizeof(LBP));
@@ -81,27 +132,68 @@ LBP *createLbp(PGM *pgm)
     lbp->height = pgm->height;
     lbp->max_gray = 255;
     lbp->matrix = createMask(pgm);
+    lbp->histogram = createHistogram(lbp->height, lbp->width, lbp->matrix);
 
     // changing path
-    lbp->path = malloc(strlen(pgm->path) + 1);
-    if (!lbp->path)
-        return NULL;
-    snprintf(lbp->path, strlen(pgm->path) + 1, "%s.lbp", getNameBeforeDot(pgm->path));
-    printf("%s\n", pgm->path);
+    if (path)
+    {
+        lbp->path = malloc(strlen(path) + 1);
+        if (!lbp->path)
+            return NULL;
+        snprintf(lbp->path, strlen(path) + 1, "%s.lbp", getNameBeforeDot(path));
+    }
+    else
+    {
+        lbp->path = malloc(strlen(pgm->path) + 1);
+        if (!lbp->path)
+            return NULL;
+        snprintf(lbp->path, strlen(pgm->path) + 1, "%s.lbp", getNameBeforeDot(pgm->path));
+        printf("%s\n", pgm->path);
+    }
 
     return lbp;
 }
 
-void createLbpImage(PGM *pgm, char *output)
+/*
+    Função que cria um arquivo binário .lbp com um vetor LBP a partir de uma imagem PGM
+*/
+void createLbpFile(LBP *lbp)
 {
-    LBP *lbp;
-    lbp = createLbp(pgm);
 
-    char path[1024];
-    snprintf(path, sizeof(path), "./lbp_img/%s", output);
+    if (!lbp)
+        return;
 
+    char *path = createPath(lbp->path, "./bin/", ".lbp");
+
+    FILE *file = fopen(path, "w");
+
+    for (int i = 0; i < 256; i++)
+    {
+        unsigned char h = (unsigned char)lbp->histogram[i];
+        fwrite(&h, sizeof(unsigned char), 1, file);
+    }
+    printf("\n");
+
+    // for (int i = 0; i < lbp->height; i++)
+    //     for (int j = 0; j < lbp->width; j++)
+    //     {
+    //         unsigned char pixel = (unsigned char)lbp->matrix[i][j];
+    //         fwrite(&pixel, sizeof(unsigned char), 1, file);
+    //     }
+
+    fclose(file);
+    free(path);
+}
+
+void createLbpImage(LBP *lbp, char *output)
+{
+    if (!lbp)
+        return;
+
+    char *path = createPath(output, "./lbp_img/", ".pgm");
     printf("%s\n", path);
     FILE *file = fopen(path, "w");
+
     if (!file)
     {
         perror("Failed to open file");
@@ -130,11 +222,16 @@ void createLbpImage(PGM *pgm, char *output)
     }
 
     fclose(file);
+    free(path);
 }
 
 char *getNameBeforeDot(char *f)
 {
     char *dot = strrchr(f, '.');
+
+    if (!dot || dot == f)
+        return f;
+
     size_t length = dot - f;
     char *newf = (char *)malloc((length + 1));
     if (newf)

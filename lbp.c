@@ -45,13 +45,15 @@ int main(int argc, char *argv[])
     if (input){
         if (isPGM(input)){
             pgm = openPGM(input);
+            lbp = createLbp(pgm, NULL);
+            createLbpFile(lbp);
         }
     }
     if (directory){
         openDirectory(directory);
     }
     if (output){
-        createLbpImage(pgm, output);
+        createLbpImage(lbp, output);
     }
 
     // free

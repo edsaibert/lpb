@@ -130,6 +130,7 @@ short isPGM(const char *fname)
 void openDirectory(char *directory)
 {
     PGM *pgm;
+    LBP *lbp;
     struct dirent *i;
     DIR *dir = opendir(directory);
 
@@ -147,8 +148,14 @@ void openDirectory(char *directory)
                 continue;
 
             char path[1024];
-            snprintf(path, sizeof(path), "%s/%s", directory, i->d_name);
+            snprintf(path, sizeof(path), "%s%s", directory, i->d_name);
+            
             pgm = openPGM(path);
+            lbp = createLbp(pgm, i->d_name);
+            createLbpFile(lbp);
+
+            freeLbp(lbp);
+            freePgm(pgm);
         }
     }
 

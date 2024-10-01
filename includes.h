@@ -20,7 +20,17 @@ struct pgm {
     int height;
     int max_gray;
 };
-typedef struct pgm LBP;
+
+typedef struct lbp LBP;
+struct lbp {
+    char type[3];
+    char *path;
+    int **matrix;
+    int *histogram;
+    int width;
+    int height;
+    int max_gray;
+};
 
 
 typedef int MASK[MASKSIZE]; 
