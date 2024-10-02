@@ -5,13 +5,15 @@
 
 char *getNameBeforeDot(char *f);
 
+char *getNameAfterSlash(char *f);
+
 short doesLpbExist(char *f);
 
 void translateBinary(MASK mask, int** binary, int i, int j);
 
 int** createMask(PGM* pgm);
 
-LBP* createLbp(PGM *pgm, char* path);
+LBP* createLbp(PGM *pgm);
 
 void createLbpFile(LBP* lbp);
 

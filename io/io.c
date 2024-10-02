@@ -153,7 +153,7 @@ void openDirectory(char* input, char *directory)
             snprintf(path, sizeof(path), "%s%s", directory, i->d_name);
             
             pgm = openPGM(path);
-            lbp = createLbp(pgm, i->d_name);
+            lbp = createLbp(pgm);
             createLbpFile(lbp);
 
             freeLbp(lbp);
@@ -166,36 +166,3 @@ void openDirectory(char* input, char *directory)
     closedir(dir);
 }
 
-float moreSimilar(char* input, char* diretorio){
-    PGM *pgm;
-    LBP *lbp;
-    float dist = 0;
-    float min = FLT_MAX; // Inicializar min com FLT_MAX
-    char *minName = malloc(1024);
-    struct dirent *i;
-    DIR *dir = opendir(diretorio);
-
-    if (dir == NULL)
-    {
-        printf("Erro ao abrir diretório\n");
-        return -1;
-    }
-
-    while ((i = readdir(dir)))
-    {
-        if (isPGM(i->d_name))
-        {
-            char path[1024];
-            snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
-            dist = eucDistance(input, path);
-            if (dist < min){
-                min = dist;
-                strcpy(minName, i->d_name);
-            }
-        }
-    }
-
-    closedir(dir);
-    printf("Imagem mais similar: %s\n", minName);
-    return min;
-}

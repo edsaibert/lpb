@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     if (isPGM(input))
     {
         pgm = openPGM(input);
-        lbp = createLbp(pgm, NULL);
+        lbp = createLbp(pgm);
         createLbpFile(lbp);
 
         eucDistance("Apuleia1.lbp", "Cecropia4.lbp");

@@ -33,7 +33,8 @@ void freePgm(PGM *pgm)
     free(pgm);
 }
 
-float moreSimilar(char* input, char* diretorio){
+float moreSimilar(char *input, char *diretorio)
+{
     PGM *pgm;
     LBP *lbp;
     float dist = -1;
@@ -50,15 +51,13 @@ float moreSimilar(char* input, char* diretorio){
 
     while ((i = readdir(dir)))
     {
-        if (isPGM(i->d_name))
+        char path[1023];
+        snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
+        dist = eucDistance(input, path);
+        if (dist < min)
         {
-            char path[1023];
-            snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
-            dist = eucDistance(input, path);
-            if (dist < min){
-                min = dist;
-                strcpy(minName, i->d_name);
-            }
+            min = dist;
+            strcpy(minName, i->d_name);
         }
     }
 
@@ -70,8 +69,10 @@ float moreSimilar(char* input, char* diretorio){
 /*
     Calcula a distância euclidiana entre dois vetores
 */
-float eucDistance(char* nome1, char* nome2){
-    if (!doesLpbExist(nome1) && !doesLpbExist(nome2)){
+float eucDistance(char *nome1, char *nome2)
+{
+    if (!doesLpbExist(nome1) && !doesLpbExist(nome2))
+    {
         return -1;
     }
 
@@ -105,7 +106,6 @@ float eucDistance(char* nome1, char* nome2){
 
     return sqrt(dist);
 }
-
 
 int *createHistogram(int height, int width, int **matrix)
 {
@@ -194,7 +194,7 @@ int **createMask(PGM *pgm)
     return binary;
 }
 
-LBP *createLbp(PGM *pgm, char *path)
+LBP *createLbp(PGM *pgm)
 {
     LBP *lbp;
     lbp = malloc(sizeof(LBP));
@@ -209,21 +209,10 @@ LBP *createLbp(PGM *pgm, char *path)
     lbp->histogram = createHistogram(lbp->height, lbp->width, lbp->matrix);
 
     // changing path
-    if (path)
-    {
-        lbp->path = malloc(strlen(path) + 1);
-        if (!lbp->path)
-            return NULL;
-        snprintf(lbp->path, strlen(path) + 1, "%s.lbp", getNameBeforeDot(path));
-    }
-    else
-    {
-        lbp->path = malloc(strlen(pgm->path) + 1);
-        if (!lbp->path)
-            return NULL;
-        snprintf(lbp->path, strlen(pgm->path) + 1, "%s.lbp", getNameBeforeDot(pgm->path));
-        printf("%s\n", pgm->path);
-    }
+    lbp->path = malloc(strlen(pgm->path) + 1);
+    if (!lbp->path)
+        return NULL;
+    snprintf(lbp->path, strlen(pgm->path) + 1, "%s", getNameAfterSlash(getNameBeforeDot(pgm->path)));
 
     return lbp;
 }
@@ -297,6 +286,16 @@ void createLbpImage(LBP *lbp, char *output)
 
     fclose(file);
     free(path);
+}
+
+char *getNameAfterSlash(char *f)
+{
+    char *slash = strrchr(f, '/');
+
+    if (!slash)
+        return f; 
+
+    return slash + 1;
 }
 
 char *getNameBeforeDot(char *f)
