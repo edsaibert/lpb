@@ -49,10 +49,11 @@ int main(int argc, char *argv[])
         lbp = createLbp(pgm);
         createLbpFile(lbp);
 
-        eucDistance("Apuleia1.lbp", "Cecropia4.lbp");
+        // eucDistance("Apuleia1.lbp", "Cecropia4.lbp");
         if (directory)
         {
             openDirectory(input, directory);
+            moreSimilar(input, directory);
         }
         if (output)
         {

@@ -53,7 +53,7 @@ float moreSimilar(char *input, char *diretorio)
     {
         char path[1023];
         snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
-        dist = eucDistance(input, path);
+        dist = eucDistance(getNameAfterSlash(input), path);
         if (dist < min)
         {
             min = dist;
@@ -76,11 +76,10 @@ float eucDistance(char *nome1, char *nome2)
         return -1;
     }
 
-    char *path1 = createPath(nome1, "./bin/", ".lbp");
-    char *path2 = createPath(nome2, "./bin/", ".lbp");
+    char *path1 = createPath(getNameAfterSlash(nome1), "./bin/", ".lbp");
+    char *path2 = createPath(getNameAfterSlash(nome2), "./bin/", ".lbp");
 
-    printf("%s\n", path1);
-    printf("%s\n", path2);
+    printf("Calculando distância euclidiana entre %s e %s\n", path1, path2);
 
     FILE *file1 = fopen(path1, "r");
     FILE *file2 = fopen(path2, "r");
@@ -222,7 +221,6 @@ LBP *createLbp(PGM *pgm)
 */
 void createLbpFile(LBP *lbp)
 {
-
     if (!lbp)
         return;
 

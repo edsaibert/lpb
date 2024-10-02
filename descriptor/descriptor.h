@@ -7,6 +7,8 @@ char *getNameBeforeDot(char *f);
 
 char *getNameAfterSlash(char *f);
 
+float moreSimilar(char *input, char *diretorio);
+
 short doesLpbExist(char *f);
 
 void translateBinary(MASK mask, int** binary, int i, int j);
