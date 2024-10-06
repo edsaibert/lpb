@@ -2,6 +2,7 @@
 #define DESC_H
 
 #include "../includes.h"
+#include "../io/io.h"
 
 char *getNameBeforeDot(char *f);
 

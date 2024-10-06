@@ -51,6 +51,9 @@ float moreSimilar(char *input, char *diretorio)
 
     while ((i = readdir(dir)))
     {
+        if (!isPGM(i->d_name))
+            continue;
+
         char path[1023];
         snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
         dist = eucDistance(getNameAfterSlash(input), path);
@@ -59,10 +62,10 @@ float moreSimilar(char *input, char *diretorio)
             min = dist;
             strcpy(minName, i->d_name);
         }
+        printf("Imagem mais similar: %s\n", minName);
     }
 
     closedir(dir);
-    printf("Imagem mais similar: %s\n", minName);
     return min;
 }
 
@@ -277,9 +280,11 @@ void createLbpImage(LBP *lbp, char *output)
     else if (strcmp(lbp->type, "P2") == 0)
     {
 
-        for (int i = 1; i < lbp->height + 1; i++)
-            for (int j = 1; j < lbp->width + 1; j++)
-                fscanf(file, "%d", &lbp->matrix[i][j]);
+        for (int i = 0; i < lbp->height; i++){
+            for (int j = 0; j < lbp->width; j++)
+                fprintf(file, "%d ", lbp->matrix[i][j]);
+            fprintf(file, "\n");
+        }
     }
 
     fclose(file);
@@ -291,7 +296,7 @@ char *getNameAfterSlash(char *f)
     char *slash = strrchr(f, '/');
 
     if (!slash)
-        return f; 
+        return f;
 
     return slash + 1;
 }

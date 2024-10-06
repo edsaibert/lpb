@@ -45,11 +45,12 @@ int main(int argc, char *argv[])
 
     if (isPGM(input))
     {
-        pgm = openPGM(input);
-        lbp = createLbp(pgm);
-        createLbpFile(lbp);
-
-        // eucDistance("Apuleia1.lbp", "Cecropia4.lbp");
+        if (!doesLpbExist(input))
+        {
+            pgm = openPGM(input);
+            lbp = createLbp(pgm);
+            createLbpFile(lbp);
+        }
         if (directory)
         {
             openDirectory(input, directory);
