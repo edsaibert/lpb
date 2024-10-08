@@ -32,7 +32,6 @@ PGM *openPGM(char *fname)
     FILE *file = fopen(fname, "rb");
     if (!file)
     {
-        printf("Erro ao abrir o arquivo: %s\n", fname);
         return NULL;
     }
 
@@ -47,9 +46,8 @@ PGM *openPGM(char *fname)
     // Checa se o arquivo está vazio
     if (isFileEmpty(file))
     {
-        printf("O arquivo está vazio: %s\n", fname);
         fclose(file);
-        free(pgm);
+        freePgm(pgm);
         return NULL;
     }
 
@@ -70,6 +68,7 @@ PGM *openPGM(char *fname)
     if (!pgm->path)
     {
         fclose(file);
+        freePgm(pgm);
         return NULL;
     }
     strcpy(pgm->path, fname);
@@ -77,8 +76,8 @@ PGM *openPGM(char *fname)
     pgm->matrix = malloc((pgm->height + 2) * sizeof(int *));
     if (!pgm->matrix)
     {
-        printf("Compre mais memória\n");
         fclose(file);
+        freePgm(pgm);
         return NULL;
     }
 
@@ -88,8 +87,8 @@ PGM *openPGM(char *fname)
         pgm->matrix[i] = malloc((pgm->width + 2) * sizeof(int));
         if (!pgm->matrix[i])
         {
-            printf("Compre mais memória\n");
             fclose(file);
+            freePgm(pgm);
             return NULL;
         }
         memset(pgm->matrix[i], 0, (pgm->width + 2) * sizeof(int)); // padding
@@ -112,6 +111,7 @@ PGM *openPGM(char *fname)
                 fscanf(file, "%d", &pgm->matrix[i][j]);
     }
 
+    fclose(file);
     return pgm;
 };
 
@@ -123,7 +123,6 @@ short isPGM(const char *fname)
         if (strcmp(dot, ".pgm") == 0)
             return 1;
     }
-    printf("Arquivo não é PGM\n");
     return 0;
 }
 
@@ -136,7 +135,6 @@ void openDirectory(char* input, char *directory)
 
     if (dir == NULL)
     {
-        printf("Erro ao abrir diretório\n");
         return;
     }
 
@@ -150,7 +148,7 @@ void openDirectory(char* input, char *directory)
                 continue;
 
             char path[1024];
-            snprintf(path, sizeof(path), "%s%s", directory, i->d_name);
+            snprintf(path, sizeof(path), "%s/%s", directory, i->d_name);
             
             pgm = openPGM(path);
             lbp = createLbp(pgm);
@@ -160,8 +158,6 @@ void openDirectory(char* input, char *directory)
             freePgm(pgm);
         }
     }
-
-    
 
     closedir(dir);
 }

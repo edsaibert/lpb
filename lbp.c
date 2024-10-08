@@ -17,19 +17,38 @@ int main(int argc, char *argv[])
         case 'd':
             directory = malloc(strlen(optarg) + 1);
             if (!directory)
+            {
+                // Libera os recursos já alocados antes de retornar
+                if (input)
+                    free(input);
+                if (output)
+                    free(output);
                 return 1;
+            }
             strcpy(directory, optarg);
             break;
         case 'i':
             input = malloc(strlen(optarg) + 1);
             if (!input)
+            {
+                if (directory)
+                    free(directory);
+                if (output)
+                    free(output);
                 return 1;
+            }
             strcpy(input, optarg);
             break;
         case 'o':
             output = malloc(strlen(optarg) + 1);
             if (!output)
+            {
+                if (directory)
+                    free(directory);
+                if (input)
+                    free(input);
                 return 1;
+            }
             strcpy(output, optarg);
             break;
         default:
@@ -41,7 +60,11 @@ int main(int argc, char *argv[])
     LBP *lbp;
 
     if (!input)
+    {
+        if (directory) free(directory);
+        if (output) free(output);
         return 1;
+    }
 
     if (isPGM(input))
     {
@@ -49,6 +72,18 @@ int main(int argc, char *argv[])
         {
             pgm = openPGM(input);
             lbp = createLbp(pgm);
+
+            if (!lbp && !pgm)
+            {
+                free(input);
+
+                if (directory)
+                    free(directory);
+                if (output)
+                    free(output);
+
+                return 1;
+            }
             createLbpFile(lbp);
         }
         if (directory)
@@ -61,10 +96,19 @@ int main(int argc, char *argv[])
             createLbpImage(lbp, output);
         }
     }
+
     // free
-    free(directory);
-    free(input);
-    free(output);
+    if (lbp)
+        freeLbp(lbp);
+    if (pgm)
+        freePgm(pgm);
+
+    if (directory)
+        free(directory);
+    if (input)
+        free(input);
+    if (output)
+        free(output);
 
     return 0;
 }

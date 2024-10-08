@@ -5,38 +5,50 @@
 */
 char *createPath(char *name, char *prefix, char *sufix)
 {
+    name = getNameBeforeDot(name);
+
+    if (name == NULL)
+        return NULL;
+
     char *path = malloc(strlen(prefix) + strlen(name) + strlen(sufix) + 1);
     if (path != NULL)
-    {
-        name = getNameBeforeDot(name);
         snprintf(path, strlen(prefix) + strlen(name) + strlen(sufix) + 1, "%s%s%s", prefix, name, sufix);
-    }
+
+    free(name);
+
     return path;
 }
 
 void freeLbp(LBP *lbp)
 {
     for (int i = 0; i < lbp->height; i++)
-        free(lbp->matrix[i]);
-    free(lbp->matrix);
-    free(lbp->histogram);
-    free(lbp->path);
+        if (lbp->matrix[i])
+            free(lbp->matrix[i]);
+
+    if (lbp->matrix)
+        free(lbp->matrix);
+    if (lbp->histogram)
+        free(lbp->histogram);
+    if (lbp->path)
+        free(lbp->path);
     free(lbp);
 }
 
 void freePgm(PGM *pgm)
 {
-    for (int i = 0; i < pgm->height; i++)
-        free(pgm->matrix[i]);
-    free(pgm->matrix);
-    free(pgm->path);
+    for (int i = 0; i <= pgm->height + 1; i++)
+        if (pgm->matrix[i])
+            free(pgm->matrix[i]);
+
+    if (pgm->matrix)
+        free(pgm->matrix);
+    if (pgm->path)
+        free(pgm->path);
     free(pgm);
 }
 
 float moreSimilar(char *input, char *diretorio)
 {
-    PGM *pgm;
-    LBP *lbp;
     float dist = -1;
     float min = FLT_MAX; // Inicializar min com FLT_MAX
     char *minName = malloc(1023);
@@ -45,8 +57,7 @@ float moreSimilar(char *input, char *diretorio)
 
     if (dir == NULL)
     {
-        printf("Erro ao abrir diretório\n");
-        return -2;
+        return -1;
     }
 
     while ((i = readdir(dir)))
@@ -55,15 +66,17 @@ float moreSimilar(char *input, char *diretorio)
             continue;
 
         char path[1023];
-        snprintf(path, sizeof(path), "%s%s", diretorio, i->d_name);
+        snprintf(path, sizeof(path), "%s/%s", diretorio, i->d_name);
         dist = eucDistance(getNameAfterSlash(input), path);
         if (dist < min)
         {
             min = dist;
             strcpy(minName, i->d_name);
         }
-        printf("Imagem mais similar: %s\n", minName);
     }
+
+    minName = getNameBeforeDot(minName);
+    printf("%s %.6f\n", minName, min);
 
     closedir(dir);
     return min;
@@ -81,8 +94,6 @@ float eucDistance(char *nome1, char *nome2)
 
     char *path1 = createPath(getNameAfterSlash(nome1), "./bin/", ".lbp");
     char *path2 = createPath(getNameAfterSlash(nome2), "./bin/", ".lbp");
-
-    printf("Calculando distância euclidiana entre %s e %s\n", path1, path2);
 
     FILE *file1 = fopen(path1, "r");
     FILE *file2 = fopen(path2, "r");
@@ -103,8 +114,6 @@ float eucDistance(char *nome1, char *nome2)
     fclose(file2);
     free(path1);
     free(path2);
-
-    printf("Distância euclidiana: %lf\n", sqrt(dist));
 
     return sqrt(dist);
 }
@@ -214,8 +223,13 @@ LBP *createLbp(PGM *pgm)
     lbp->path = malloc(strlen(pgm->path) + 1);
     if (!lbp->path)
         return NULL;
-    snprintf(lbp->path, strlen(pgm->path) + 1, "%s", getNameAfterSlash(getNameBeforeDot(pgm->path)));
 
+    char *nBeforeDot = getNameBeforeDot(pgm->path);
+    char *nAfterSlash = getNameAfterSlash(nBeforeDot);
+    snprintf(lbp->path, strlen(pgm->path) + 1, "%s", nAfterSlash);
+
+    free(nBeforeDot);
+    free(nAfterSlash);
     return lbp;
 }
 
@@ -224,10 +238,13 @@ LBP *createLbp(PGM *pgm)
 */
 void createLbpFile(LBP *lbp)
 {
-    if (!lbp)
+    if (!lbp && !lbp->path)
         return;
 
     char *path = createPath(lbp->path, "./bin/", ".lbp");
+
+    if (!path)
+        return;
 
     FILE *file = fopen(path, "w");
 
@@ -236,14 +253,6 @@ void createLbpFile(LBP *lbp)
         unsigned char h = (unsigned char)lbp->histogram[i];
         fwrite(&h, sizeof(unsigned char), 1, file);
     }
-    printf("\n");
-
-    // for (int i = 0; i < lbp->height; i++)
-    //     for (int j = 0; j < lbp->width; j++)
-    //     {
-    //         unsigned char pixel = (unsigned char)lbp->matrix[i][j];
-    //         fwrite(&pixel, sizeof(unsigned char), 1, file);
-    //     }
 
     fclose(file);
     free(path);
@@ -255,12 +264,10 @@ void createLbpImage(LBP *lbp, char *output)
         return;
 
     char *path = createPath(output, "./lbp_img/", ".pgm");
-    printf("%s\n", path);
     FILE *file = fopen(path, "w");
 
     if (!file)
     {
-        perror("Failed to open file");
         return;
     }
 
@@ -280,7 +287,8 @@ void createLbpImage(LBP *lbp, char *output)
     else if (strcmp(lbp->type, "P2") == 0)
     {
 
-        for (int i = 0; i < lbp->height; i++){
+        for (int i = 0; i < lbp->height; i++)
+        {
             for (int j = 0; j < lbp->width; j++)
                 fprintf(file, "%d ", lbp->matrix[i][j]);
             fprintf(file, "\n");
@@ -296,7 +304,7 @@ char *getNameAfterSlash(char *f)
     char *slash = strrchr(f, '/');
 
     if (!slash)
-        return f;
+        return NULL;
 
     return slash + 1;
 }
@@ -306,7 +314,7 @@ char *getNameBeforeDot(char *f)
     char *dot = strrchr(f, '.');
 
     if (!dot || dot == f)
-        return f;
+        return NULL;
 
     size_t length = dot - f;
     char *newf = (char *)malloc((length + 1));
@@ -314,31 +322,47 @@ char *getNameBeforeDot(char *f)
     {
         strncpy(newf, f, length);
         newf[length] = '\0';
+        return newf;
     }
-    return newf;
+    return NULL;
 }
 
 short doesLpbExist(char *f)
 {
     f = getNameBeforeDot(f);
 
+    if (!f)
+        return 0;
+
+    char *path = NULL;
     struct dirent *i;
     DIR *dir = opendir("./bin");
 
     if (dir == NULL)
+    {
+        free(f);
+        closedir(dir);
         return 0;
+    }
 
     while ((i = readdir(dir)))
     {
-        char *path;
         path = getNameBeforeDot(i->d_name);
+
+        if (!path)
+            continue;
+
         if (strcmp(path, f) == 0)
         {
+            free(f);
+            free(path);
             closedir(dir);
             return 1;
         }
+        free(path);
     }
 
+    free(f);
     closedir(dir);
     return 0;
 }
