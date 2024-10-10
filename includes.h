@@ -1,6 +1,11 @@
 #ifndef INCLUDES_H
 #define INCLUDES_H
 
+/* 
+    Trabalho de Programação II - UFPR
+    Eduarda Saibert
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +28,7 @@ struct pgm {
     int max_gray;
 };
 
+// Estrutura de um LBP
 typedef struct lbp LBP;
 struct lbp {
     char type[3];
@@ -33,7 +39,6 @@ struct lbp {
     int height;
     int max_gray;
 };
-
 
 typedef int MASK[MASKSIZE]; 
 

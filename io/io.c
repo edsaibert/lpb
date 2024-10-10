@@ -20,6 +20,7 @@ short isFileEmpty(FILE *file)
         return 1;
     }
 
+    // Checa se o arquivo está vazio
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
     fseek(file, 0, SEEK_SET);
@@ -117,6 +118,7 @@ PGM *openPGM(char *fname)
 
 short isPGM(const char *fname)
 {
+    // Verifica se o arquivo é PGM
     const char *dot = strrchr(fname, '.');
     if (dot != NULL)
     {
@@ -160,5 +162,50 @@ void openDirectory(char* input, char *directory)
     }
 
     closedir(dir);
+}
+
+
+char *getNameAfterSlash(char *f)
+{
+    char *slash = strrchr(f, '/');
+
+    if (!slash)
+        return strdup(f);
+
+    return strdup(slash + 1);
+}
+
+char *getNameBeforeDot(char *f)
+{
+    char *dot = strrchr(f, '.');
+
+    if (!dot || dot == f)
+        return strdup(f);
+
+    size_t length = dot - f;
+    char *newf = (char *)malloc((length + 1));
+    if (newf)
+    {
+        strncpy(newf, f, length);
+        newf[length] = '\0';
+        return newf;
+    }
+    return strdup(f);
+}
+
+char *createPath(char *name, char *prefix, char *sufix)
+{
+    name = getNameBeforeDot(name);
+
+    if (name == NULL)
+        return NULL;
+
+    char *path = malloc(strlen(prefix) + strlen(name) + strlen(sufix) + 1);
+    if (path != NULL)
+        snprintf(path, strlen(prefix) + strlen(name) + strlen(sufix) + 1, "%s%s%s", prefix, name, sufix);
+
+    free(name);
+
+    return path;
 }
 

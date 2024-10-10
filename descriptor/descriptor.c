@@ -1,24 +1,5 @@
 #include "descriptor.h"
 
-/*
-    Função que cria um caminho para um arquivo
-*/
-char *createPath(char *name, char *prefix, char *sufix)
-{
-    name = getNameBeforeDot(name);
-
-    if (name == NULL)
-        return NULL;
-
-    char *path = malloc(strlen(prefix) + strlen(name) + strlen(sufix) + 1);
-    if (path != NULL)
-        snprintf(path, strlen(prefix) + strlen(name) + strlen(sufix) + 1, "%s%s%s", prefix, name, sufix);
-
-    free(name);
-
-    return path;
-}
-
 void freeLbp(LBP *lbp)
 {
     for (int i = 0; i < lbp->height; i++)
@@ -61,6 +42,7 @@ void moreSimilar(char *input, char *diretorio)
         return;
     }
 
+    // Enquanto o diretório estiver aberto, lê todos os arquivos do diretório
     while ((i = readdir(dir)))
     {
         if (!isPGM(i->d_name))
@@ -69,9 +51,12 @@ void moreSimilar(char *input, char *diretorio)
         char path[1023];
         snprintf(path, sizeof(path), "%s/%s", diretorio, i->d_name);
 
+        // Calcula a distância euclidiana entre o input e o arquivo atual
         aux = getNameAfterSlash(input);
         dist = eucDistance(aux, path);
 
+
+        // Se a distância for menor que a mínima, atualiza a distância mínima e o nome do arquivo
         if (dist < min)
         {
             min = dist;
@@ -82,6 +67,8 @@ void moreSimilar(char *input, char *diretorio)
     }
 
     aux = getNameBeforeDot(minName);
+
+    // Imprime o nome do arquivo mais similar e a distância euclidiana
     printf("%s %.6f\n", aux, min);
 
     free(minName);
@@ -105,12 +92,15 @@ float eucDistance(char *nome1, char *nome2)
     char *path1 = createPath(aux1, "./bin/", ".lbp");
     char *path2 = createPath(aux2, "./bin/", ".lbp");
 
+    // Abre os arquivos binários
     FILE *file1 = fopen(path1, "r");
     FILE *file2 = fopen(path2, "r");
 
     if (!file1 || !file2)
         return -1;
 
+
+    // Calcula a distância euclidiana entre os dois vetores
     int dist = 0;
     unsigned char h1, h2;
     for (int i = 0; i < 256; i++)
@@ -134,9 +124,11 @@ int *createHistogram(int height, int width, int **matrix)
 {
     int *histogram = malloc(sizeof(int) * 256);
 
+    // Inicializa o histograma com 0
     for (int i = 0; i < 256; i++)
         histogram[i] = 0;
 
+    // Calcula o histograma
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
@@ -152,6 +144,8 @@ void translateBinary(MASK mask, int **binary, int i, int j)
 {
     int pow = 1;
     binary[i][j] = 0;
+
+    // Traduz a máscara binária para um número decimal entre 0 e 255
     for (int k = 0; k < MASKSIZE; k++)
     {
         binary[i][j] += mask[k] * pow;
@@ -163,6 +157,7 @@ int **createMask(PGM *pgm)
 {
     MASK mask;
 
+    // Aloca memória para a matriz binária
     int **binary = malloc((pgm->height) * sizeof(int *));
     for (int i = 0; i < pgm->height; i++)
     {
@@ -174,6 +169,8 @@ int **createMask(PGM *pgm)
     if (!binary)
         return NULL;
 
+    // Cria a máscara LBP 
+    // (calcula os vizinhos como um vetor, começando pelo pixel superior esquerdo em sentido horário)
     for (int i = 1; i < pgm->height + 1; i++)
     {
         for (int j = 1; j < pgm->width + 1; j++)
@@ -231,7 +228,7 @@ LBP *createLbp(PGM *pgm)
     lbp->matrix = createMask(pgm);
     lbp->histogram = createHistogram(lbp->height, lbp->width, lbp->matrix);
 
-    // changing path
+    // Garante que o nome do arquivo não tenha a extensão .pgm e nem o caminho 
     char *nBeforeDot = getNameBeforeDot(pgm->path);
     char *nAfterSlash = getNameAfterSlash(nBeforeDot);
 
@@ -265,6 +262,7 @@ void createLbpFile(LBP *lbp)
 
     FILE *file = fopen(path, "w");
 
+    // Escreve o histograma no arquivo binário
     for (int i = 0; i < 256; i++)
     {
         unsigned char h = (unsigned char)lbp->histogram[i];
@@ -288,6 +286,7 @@ void createLbpImage(LBP *lbp, char *output)
         return;
     }
 
+    // Escreve o cabeçalho do arquivo PGM
     fprintf(file, "%s\n%d %d\n%d\n", lbp->type, lbp->width, lbp->height, lbp->max_gray);
 
     // Se é do tipo binário (P5)
@@ -314,34 +313,6 @@ void createLbpImage(LBP *lbp, char *output)
 
     fclose(file);
     free(path);
-}
-
-char *getNameAfterSlash(char *f)
-{
-    char *slash = strrchr(f, '/');
-
-    if (!slash)
-        return strdup(f);
-
-    return strdup(slash + 1);
-}
-
-char *getNameBeforeDot(char *f)
-{
-    char *dot = strrchr(f, '.');
-
-    if (!dot || dot == f)
-        return strdup(f);
-
-    size_t length = dot - f;
-    char *newf = (char *)malloc((length + 1));
-    if (newf)
-    {
-        strncpy(newf, f, length);
-        newf[length] = '\0';
-        return newf;
-    }
-    return strdup(f);
 }
 
 short doesLpbExist(char *f)

@@ -10,6 +10,8 @@ int main(int argc, char *argv[])
 
     char next_option;
     char *directory = NULL, *input = NULL, *output = NULL;
+
+    // Processa os argumentos passados por linha de comando
     while ((next_option = getopt(argc, argv, "d:i:o:")) != -1)
     {
         switch (next_option)
@@ -66,8 +68,10 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // Se o arquivo de entrada é PGM
     if (isPGM(input))
     {
+        // Abre o arquivo PGM, caso exista
         if (!doesLpbExist(input))
         {
             pgm = openPGM(input);
@@ -86,11 +90,13 @@ int main(int argc, char *argv[])
             }
             createLbpFile(lbp);
         }
+        // Se o diretório foi passado, abre o diretório e verifica os arquivos dentro dele
         if (directory)
         {
             openDirectory(input, directory);
             moreSimilar(input, directory);
         }
+        // Se o arquivo de saída foi passado, cria a imagem após a transformação pela máscara LBP
         if (output)
         {
             createLbpImage(lbp, output);
