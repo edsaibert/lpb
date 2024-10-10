@@ -20,24 +20,24 @@
 // Estrutura de uma imagem PGM
 typedef struct pgm PGM;
 struct pgm {
-    char type[3];
-    char *path;
-    int **matrix;
-    int width;
-    int height;
-    int max_gray;
+    char type[3]; // P2 ou P5
+    char *path; // Caminho ou nome do arquivo
+    int **matrix; // Matriz de pixels
+    int width; // Largura
+    int height; // Altura
+    int max_gray; // Máximo de tons de cinza
 };
 
 // Estrutura de um LBP
 typedef struct lbp LBP;
 struct lbp {
-    char type[3];
-    char *path;
-    int **matrix;
-    int *histogram;
-    int width;
-    int height;
-    int max_gray;
+    char type[3]; // P2 ou P5
+    char *path; // Caminho ou nome do arquivo
+    int **matrix; // Matriz de pixels
+    int *histogram; // Histograma
+    int width;  // Largura
+    int height; // Altura
+    int max_gray; // Máximo de tons de cinza
 };
 
 typedef int MASK[MASKSIZE]; 

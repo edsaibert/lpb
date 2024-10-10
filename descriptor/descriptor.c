@@ -176,7 +176,9 @@ int **createMask(PGM *pgm)
         for (int j = 1; j < pgm->width + 1; j++)
         {
             int l = 0;
-            for (int k = j - 1; k <= j + 1; k++)
+
+            // vizinhos da linha de cima
+            for (int k = j - 1; k <= j + 1; k++) 
             {
                 if (pgm->matrix[i - 1][k] > pgm->matrix[i][j])
                     mask[l] = 1;
@@ -185,12 +187,14 @@ int **createMask(PGM *pgm)
                 l++;
             }
 
+            /// vizinho direito da linha atual
             if (pgm->matrix[i][j + 1] > pgm->matrix[i][j])
                 mask[l] = 1;
             else
                 mask[l] = 0;
             l++;
 
+            /// vizinhos da linha de baixo
             for (int k = j + 1; k >= j - 1; k--)
             {
 
@@ -201,6 +205,7 @@ int **createMask(PGM *pgm)
                 l++;
             }
 
+            // vizinho esquerdo da linha atual
             if (pgm->matrix[i][j - 1] > pgm->matrix[i][j])
                 mask[l] = 1;
             else
