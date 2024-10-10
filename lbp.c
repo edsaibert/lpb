@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    PGM *pgm;
-    LBP *lbp;
+    PGM *pgm = NULL;
+    LBP *lbp = NULL;
 
     if (!input)
     {

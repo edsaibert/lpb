@@ -47,17 +47,18 @@ void freePgm(PGM *pgm)
     free(pgm);
 }
 
-float moreSimilar(char *input, char *diretorio)
+void moreSimilar(char *input, char *diretorio)
 {
     float dist = -1;
     float min = FLT_MAX; // Inicializar min com FLT_MAX
     char *minName = malloc(1023);
+    char *aux = NULL;
     struct dirent *i;
     DIR *dir = opendir(diretorio);
 
     if (dir == NULL)
     {
-        return -1;
+        return;
     }
 
     while ((i = readdir(dir)))
@@ -67,19 +68,25 @@ float moreSimilar(char *input, char *diretorio)
 
         char path[1023];
         snprintf(path, sizeof(path), "%s/%s", diretorio, i->d_name);
-        dist = eucDistance(getNameAfterSlash(input), path);
+
+        aux = getNameAfterSlash(input);
+        dist = eucDistance(aux, path);
+
         if (dist < min)
         {
             min = dist;
             strcpy(minName, i->d_name);
         }
+
+        free(aux);
     }
 
-    minName = getNameBeforeDot(minName);
-    printf("%s %.6f\n", minName, min);
+    aux = getNameBeforeDot(minName);
+    printf("%s %.6f\n", aux, min);
 
+    free(minName);
+    free(aux);
     closedir(dir);
-    return min;
 }
 
 /*
@@ -92,8 +99,11 @@ float eucDistance(char *nome1, char *nome2)
         return -1;
     }
 
-    char *path1 = createPath(getNameAfterSlash(nome1), "./bin/", ".lbp");
-    char *path2 = createPath(getNameAfterSlash(nome2), "./bin/", ".lbp");
+    char* aux1 = getNameAfterSlash(nome1);
+    char* aux2 = getNameAfterSlash(nome2);
+
+    char *path1 = createPath(aux1, "./bin/", ".lbp");
+    char *path2 = createPath(aux2, "./bin/", ".lbp");
 
     FILE *file1 = fopen(path1, "r");
     FILE *file2 = fopen(path2, "r");
@@ -114,6 +124,8 @@ float eucDistance(char *nome1, char *nome2)
     fclose(file2);
     free(path1);
     free(path2);
+    free(aux1);
+    free(aux2);
 
     return sqrt(dist);
 }
@@ -207,7 +219,7 @@ int **createMask(PGM *pgm)
 
 LBP *createLbp(PGM *pgm)
 {
-    LBP *lbp;
+    LBP *lbp = NULL;
     lbp = malloc(sizeof(LBP));
     if (!lbp)
         return NULL;
@@ -220,16 +232,21 @@ LBP *createLbp(PGM *pgm)
     lbp->histogram = createHistogram(lbp->height, lbp->width, lbp->matrix);
 
     // changing path
-    lbp->path = malloc(strlen(pgm->path) + 1);
-    if (!lbp->path)
-        return NULL;
-
     char *nBeforeDot = getNameBeforeDot(pgm->path);
     char *nAfterSlash = getNameAfterSlash(nBeforeDot);
-    snprintf(lbp->path, strlen(pgm->path) + 1, "%s", nAfterSlash);
 
-    free(nBeforeDot);
+    lbp->path = malloc(strlen(nAfterSlash) + 1);
+    if (!lbp->path){
+        free(nAfterSlash);
+        free(nBeforeDot);
+        freeLbp(lbp);
+        return NULL;
+    }
+
+    snprintf(lbp->path, strlen(nAfterSlash) + 1, "%s", nAfterSlash);
+
     free(nAfterSlash);
+    free(nBeforeDot);
     return lbp;
 }
 
@@ -304,9 +321,9 @@ char *getNameAfterSlash(char *f)
     char *slash = strrchr(f, '/');
 
     if (!slash)
-        return NULL;
+        return strdup(f);
 
-    return slash + 1;
+    return strdup(slash + 1);
 }
 
 char *getNameBeforeDot(char *f)
@@ -314,7 +331,7 @@ char *getNameBeforeDot(char *f)
     char *dot = strrchr(f, '.');
 
     if (!dot || dot == f)
-        return NULL;
+        return strdup(f);
 
     size_t length = dot - f;
     char *newf = (char *)malloc((length + 1));
@@ -324,7 +341,7 @@ char *getNameBeforeDot(char *f)
         newf[length] = '\0';
         return newf;
     }
-    return NULL;
+    return strdup(f);
 }
 
 short doesLpbExist(char *f)

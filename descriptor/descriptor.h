@@ -8,7 +8,7 @@ char *getNameBeforeDot(char *f);
 
 char *getNameAfterSlash(char *f);
 
-float moreSimilar(char *input, char *diretorio);
+void moreSimilar(char *input, char *diretorio);
 
 short doesLpbExist(char *f);
 
