@@ -1,5 +1,5 @@
-#include "includes.h"
 // Own
+#include "includes.h"
 #include "io/io.h"
 #include "descriptor/descriptor.h"
 
@@ -93,6 +93,10 @@ int main(int argc, char *argv[])
         // Se o diretório foi passado, abre o diretório e verifica os arquivos dentro dele
         if (directory)
         {
+            // Remove a última barra do diretório, se existir
+            if (directory[strlen(directory) - 1] == '/')
+                removeLastSlash(directory);
+
             openDirectory(input, directory);
             moreSimilar(input, directory);
         }

@@ -37,4 +37,7 @@ char *getNameAfterSlash(char *f);
 /*  Cria o path dado um nome, um prefixo do nome e um sufixo do nome    */
 char *createPath(char *name, char *prefix, char *sufix);
 
+/*  Remove a última ocorrência de '/' para que o programa aceite tanto './directory/' e './directory'   */
+void removeLastSlash(char *f);
+
 #endif

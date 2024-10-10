@@ -209,3 +209,9 @@ char *createPath(char *name, char *prefix, char *sufix)
     return path;
 }
 
+void removeLastSlash(char *f){
+    char *slash = strrchr(f, '/');
+
+    if (slash)
+        *slash = '\0'; 
+}
